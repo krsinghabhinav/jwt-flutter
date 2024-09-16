@@ -1,0 +1,61 @@
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+
+class AuthSigner {
+  final String _issuer = "com.hostelpedia";
+  final int _expirationTime = 3600; // expires after 3600 sec
+  final String _secretKey =
+      "Hostel@2024@@@Pedia"; // Replace this with your actual secret key
+
+  String createJwt() {
+    // Get current time in seconds
+    final int currentTime =
+        (DateTime.now().millisecondsSinceEpoch / 1000).floor();
+
+    // Create a JWT signer with the secret key using HS256 algorithm
+    final jwt = JWT({
+      'iat': currentTime, // Issued at time
+      'exp': currentTime + _expirationTime, // Expiration time
+    }, issuer: _issuer);
+
+    // Sign the JWT and return it
+    final token = jwt.sign(SecretKey(_secretKey),
+        expiresIn: Duration(seconds: _expirationTime));
+
+    return token;
+  }
+}
+
+void main() {
+  final authSigner = AuthSigner();
+  final jwt = authSigner.createJwt();
+
+  print('Generated JWT: $jwt');
+}
+===============================================
+
+api ----------------------------    
+
+gteApi// /////////////////
+
+//getApi
+  Future<dynamic> getApi(
+      {required String url, required String jwtToken}) async {
+    try {
+      final apirespnse = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization':
+              'Bearer $jwtToken', // Add JWT token in the Authorization header
+        },
+      );
+      printvalue(url, tag: "Api Get url: ");
+      printvalue(jwtToken, tag: "Api Header: ");
+      printvalue(apirespnse.body, tag: "Api Response");
+      return _returenResponse(apirespnse);
+    } on SocketException {
+      return null;
+    }
+  }
+
+  
